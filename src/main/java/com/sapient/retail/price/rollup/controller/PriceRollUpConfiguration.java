@@ -15,6 +15,7 @@ import org.apache.kafka.streams.kstream.Produced;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +37,12 @@ public class PriceRollUpConfiguration {
 	@Autowired private KafkaProperties kafkaProperties;
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
+	@Value (value = "${kafka.intopic}")
+	private String priceKafkaInTopic;
+	
+	@Value (value = "${kafka.outtopic}")
+	private String priceKafkaOutTopic;
+	
 	@SuppressWarnings("resource")
 	@Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
     public StreamsConfig kStreamsConfigs() {
@@ -53,11 +60,11 @@ public class PriceRollUpConfiguration {
     @Bean
     public KStream<String, Price> kStreamJson(StreamsBuilder builder) {
     	logger.info("Opening stream to roll up data");
-    	KStream<String, Price> stream = builder.stream("${kafka.intopic}", Consumed.with(Serdes.String(), new JsonSerde<>(Price.class)));
+    	KStream<String, Price> stream = builder.stream(priceKafkaInTopic, Consumed.with(Serdes.String(), new JsonSerde<>(Price.class)));
     	
     	KStream<String, ProductPrice> rolledUpPrice = stream.map(new PriceRollUpMapper());
     	
-    	rolledUpPrice.to("${kafka.outtopic}", Produced.with(Serdes.String(), new JsonSerde<>(ProductPrice.class)));
+    	rolledUpPrice.to(priceKafkaOutTopic, Produced.with(Serdes.String(), new JsonSerde<>(ProductPrice.class)));
         
         return stream;
     }

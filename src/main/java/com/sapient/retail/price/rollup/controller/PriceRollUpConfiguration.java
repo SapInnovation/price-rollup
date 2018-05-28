@@ -100,6 +100,7 @@ public class PriceRollUpConfiguration {
 			productPrice.setMinPrice(minPrice);
 			productPrice.setProductId(price.getProductId());
 			productPrice.setSkuprice(price.getSkuPrice());
+			productPrice.setCurrency(price.getCurrency());
 			logger.info("roll up price for productId :" + productPrice.getMinPrice());
 			
 			return new KeyValue<String, ProductPrice>(key, productPrice);

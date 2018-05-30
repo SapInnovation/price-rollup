@@ -7,6 +7,7 @@ buildscript {
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.2")
 	}
 }
 
@@ -14,6 +15,10 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.junit.platform.gradle.plugin'
+apply plugin: 'jacoco'
+apply plugin: 'findbugs'
+apply plugin: 'pmd'
 
 description = 'price-rollup'	
 
@@ -25,11 +30,49 @@ repositories {
 	mavenCentral()
 }
 
-
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	compile 'org.springframework.kafka:spring-kafka:2.1.2.RELEASE'
 	compile 'org.apache.kafka:kafka-streams:1.0.0'
-    compile 'ch.qos.logback:logback-classic:1.2.2'
-	testCompile('org.springframework.boot:spring-boot-starter-test')
+	compile 'ch.qos.logback:logback-classic:1.2.2'
+
+	testCompile 'org.springframework.boot:spring-boot-starter-test'
+	testCompile 'org.junit.jupiter:junit-jupiter-api'
+	testRuntime 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+	useJUnitPlatform {
+	    includeEngines 'junit-jupiter'
+	}
+
+	failFast = true
+}
+
+jacoco {
+    toolVersion = '0.7.9'
+    applyTo junitPlatformTest
+}
+
+junitPlatformTest {
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/test.exec")
+    }
+}
+
+jacocoTestReport{
+	additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
+	reports {
+		xml.enabled = true
+		csv.enabled = false
+		html.enabled = true
+	    }
+	executionData = files("$buildDir/jacoco/test.exec")
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
 }

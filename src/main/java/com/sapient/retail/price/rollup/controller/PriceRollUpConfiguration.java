@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.serialization.Serdes.StringSerde;
 import org.apache.kafka.streams.Consumed;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -29,6 +30,7 @@ import com.sapient.retail.price.rollup.model.Price;
 import com.sapient.retail.price.rollup.model.ProductPrice;
 import com.sapient.retail.price.rollup.model.SKUPrice;
 
+
 @Configuration
 @EnableKafka
 @EnableKafkaStreams
@@ -42,16 +44,16 @@ public class PriceRollUpConfiguration {
 	
 	@Value (value = "${kafka.outtopic}")
 	private String priceKafkaOutTopic;
-	
-	@SuppressWarnings("resource")
+
+	@SuppressWarnings( "resource")
 	@Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
     public StreamsConfig kStreamsConfigs() {
-		logger.info("Setting Kafka configuration : StreamsConfig "+ this.getClass());
+		logger.info("Setting Kafka configuration : StreamsConfig ");
         Map<String, Object> props = new HashMap<>();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "price-streams");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
-        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, new JsonSerde<Price>(Price.class).getClass());
+        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, StringSerde.class);
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, JsonSerde.class);
         props.put(JsonDeserializer.DEFAULT_KEY_TYPE, String.class);
         props.put(JsonDeserializer.DEFAULT_VALUE_TYPE, Price.class);
         return new StreamsConfig(props);

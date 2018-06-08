@@ -3,11 +3,14 @@ buildscript {
 		springBootVersion = '2.0.1.RELEASE'
 	}
 	repositories {
-		mavenCentral()
-	}
+	    maven {
+	      url "https://plugins.gradle.org/m2/"
+	    }
+    }
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 		classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.2")
+		classpath("gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.19.2")
 	}
 }
 
@@ -19,12 +22,24 @@ apply plugin: 'org.junit.platform.gradle.plugin'
 apply plugin: 'jacoco'
 apply plugin: 'findbugs'
 apply plugin: 'pmd'
+apply plugin: 'com.palantir.docker'
 
 description = 'price-rollup'	
 
-group = 'com.sapient.retail.pricerollup'
-version = '0.0.1-SNAPSHOT'
+group = 'reactiveretail'
 sourceCompatibility = 1.8
+
+bootJar {
+    baseName = 'pricerollup'
+    version =  '0.1.0'
+}
+
+docker {
+    dependsOn build
+    name "${project.group}/${bootJar.baseName}"
+    files bootJar.archivePath
+    buildArgs(['JAR_FILE': "${bootJar.archiveName}"])
+}
 
 repositories {
 	mavenCentral()
